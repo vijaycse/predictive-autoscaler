@@ -1,5 +1,6 @@
 import requests
-from config import CLOUD_URL
+from config import CLOUD_URL, CLOUD_APPLICATION, CLOUD_SERVER_GROUP,CLOUD_CLUSTER
+import time
 
 
 def resize_cluster(new_instance_count):
@@ -37,7 +38,7 @@ def fetch_session():
 
 
 def fetch_current_cluster(session):
-    cluster_info = session.get(url=CLOUD_URL+'/api/applications/cartsv4/clusters/cartsv4-digital-npe/dev/server_groups/cartsv4-digital-npe-v062',
+    cluster_info = session.get(url=CLOUD_URL+'/api/applications/'+CLOUD_APPLICATION+'/clusters/'+CLOUD_CLUSTER+'/dev/server_groups/'+CLOUD_SERVER_GROUP,
                                verify=False)
     print(cluster_info.json())
     return cluster_info['instanceCounts']
@@ -46,17 +47,18 @@ def fetch_current_cluster(session):
 def resizing_cluster(new_instance_count, session):
 
     print('resizing Capacity')
-    resize_central = session.put(url=CLOUD_URL+'/api/applications/cartsv4/clusters/cartsv4-digital-npe/dev/server_groups/cartsv4-digital-npe-v062/resize',
+    resize_central = session.put(url=CLOUD_URL+'/api/applications/'+CLOUD_APPLICATION+'/clusters/'+CLOUD_CLUSTER+'/dev/server_groups/'+CLOUD_SERVER_GROUP+'/resize',
                                  json={'region': 'us-central1', 'desired': new_instance_count,
                                        'min': '2', 'max': new_instance_count},
                                  verify=False)
     print('resizing central' + resize_central)
 
-    resize_east = session.put(url=CLOUD_URL+'/api/applications/cartsv4/clusters/cartsv4-digital-npe/dev/server_groups/cartsv4-digital-npe-v062/resize',
+    resize_east = session.put(url=CLOUD_URL+'/api/applications/'+CLOUD_APPLICATION+'/clusters/'+CLOUD_CLUSTER+'/dev/server_groups/'+CLOUD_SERVER_GROUP+'resize',
                               json={'region': 'us-east1', 'desired': new_instance_count,
                                     'min': '2', 'max': new_instance_count},
                               verify=False)
     print('resizing central' + resize_east)
+    time.sleep(1000)
 
 
 def percentage_change(new_instance_count, current_instance_count):
