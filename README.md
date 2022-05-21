@@ -19,3 +19,10 @@
  in 4 batches.
  - This application only works for GCP. However it can be modified for other providers as well.
  
+
+### Why not Auto-scaling?
+
+We scale ahead of time before the events or spike seasons (holiday seasons Nov-Dec) generally. Auto scaling is reactive in nature
+and often times, its based on CPU and memory usage. 
+Predictive scaling works based on TPS/order trend.Predictive scaling and auto scaling can co-exist.
+
