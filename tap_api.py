@@ -6,7 +6,6 @@ import time
 def resize_cluster(new_instance_count):
     print("Updating cluster")
     min_capacity = 2
-    new_instance_count = 10
     if(new_instance_count is not None):
         new_instance_count = round(new_instance_count)
         if(new_instance_count > min_capacity):
@@ -56,18 +55,18 @@ def fetch_current_cluster(session):
 def resizing_cluster(new_instance_count, session):
 
     print('resizing Capacity', str(new_instance_count))
-    # resize_central = session.put(url=CLOUD_URL+'/api/applications/'+CLOUD_APPLICATION+'/clusters/'+CLOUD_CLUSTER+'/dev/server_groups/'+CLOUD_SERVER_GROUP+'/resize',
-    #                              json={'region': 'us-central1', 'desired': new_instance_count,
-    #                                    'min': '2', 'max': new_instance_count},
-    #                              verify=False)
-    # print('resizing central' + str(resize_central))
+    resize_central = session.put(url=CLOUD_URL+'/api/applications/'+CLOUD_APPLICATION+'/clusters/'+CLOUD_CLUSTER+'/dev/server_groups/'+CLOUD_SERVER_GROUP+'/resize',
+                                 json={'region': 'us-central1', 'desired': new_instance_count,
+                                       'min': '2', 'max': new_instance_count},
+                                 verify=False)
+    print('resizing central' + str(resize_central))
 
-    # resize_east = session.put(url=CLOUD_URL+'/api/applications/'+CLOUD_APPLICATION+'/clusters/'+CLOUD_CLUSTER+'/dev/server_groups/'+CLOUD_SERVER_GROUP+'resize',
-    #                           json={'region': 'us-east1', 'desired': new_instance_count,
-    #                                 'min': '2', 'max': new_instance_count},
-    #                           verify=False)
-    # print('resizing east' + str(resize_east))
-    # time.sleep(1000)
+    resize_east = session.put(url=CLOUD_URL+'/api/applications/'+CLOUD_APPLICATION+'/clusters/'+CLOUD_CLUSTER+'/dev/server_groups/'+CLOUD_SERVER_GROUP+'resize',
+                              json={'region': 'us-east1', 'desired': new_instance_count,
+                                    'min': '2', 'max': new_instance_count},
+                              verify=False)
+    print('resizing east' + str(resize_east))
+    time.sleep(1000)
 
 
 def percentage_change(new_instance_count, current_instance_count):
