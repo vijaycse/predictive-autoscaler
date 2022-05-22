@@ -1,10 +1,10 @@
 import os
-from persistence.db import get_forecast
-from integration.tap_api import resize_cluster
+from db import get_forecast_next_run
+from tap_api import resize_cluster
 
 
 def resize_server_capacity():
-    forecast = get_forecast()
+    forecast = get_forecast_next_run()
     new_instance_count = get_new_capacity(forecast)
     resize_cluster(new_instance_count)
 

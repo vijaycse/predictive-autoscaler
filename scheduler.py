@@ -1,5 +1,5 @@
 import schedule
-from controller.controller import resize_server_capacity
+from controller import resize_server_capacity
 
 def pull_latest_forecast():
     print("started querying data")
