@@ -20,8 +20,8 @@ def resize_cluster(new_instance_count):
                     if(abs(scaling_needed_perct) > 2.0):  # scale only if diff % more than 2%
                             # batch it and call method scale cluster iteratively
                             # to avoud scaling more than 5 at a time
-                            for i in range(round(abs(scaling_diff)/5)):
-                                resizing_cluster(5, session)
+                            for i in range(round(abs(scaling_diff)/4)):
+                                resizing_cluster(4, session)
                             print('Update completed')
                     else:
                         print("No need to scale")
