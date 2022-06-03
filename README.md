@@ -19,7 +19,7 @@
 #### Design decisions:
 
  - Scale up or down will be intiated only when the percentage change is more than 20%
- - Scaling up and down will be done 5 at a time. e.g 20 instances scale up will be done 
+ - Scaling up and down will be done 4 at a time. e.g 20 instances scale up will be done 
  in 4 batches.
  - This application only works for GCP. However it can be modified for other providers as well.
  
