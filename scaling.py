@@ -12,12 +12,12 @@ def resize_cluster_batch(scaling_diff, session):
 def resize_cluster(new_instance_count):
     print("Updating cluster with new capacity", new_instance_count)
     min_capacity = 2
-    new_instance_count = 4
     if(new_instance_count is not None):
         new_instance_count = round(new_instance_count)
         if(new_instance_count > min_capacity):
             session = fetch_session()
             current_instance_count = fetch_current_cluster(session)
+            print("current instance count ",current_instance_count)
             if(new_instance_count != current_instance_count):
                 scaling_perct = percentage_change(
                     new_instance_count, current_instance_count)
@@ -33,9 +33,9 @@ def resize_cluster(new_instance_count):
                     print("only scaling up") # no need to scale down if less than 1%
                     resize_cluster_batch(scaling_diff, session)
                 else:
-                    print("No need to scale")
+                    print("No need to scale as difference is not much")
             else:
-                print("No need to scale")
+                print("No need to scale - proposed instance count is same as old")
 
         else:
             print('no change needed', new_instance_count)
@@ -59,8 +59,8 @@ def fetch_session():
 def fetch_current_cluster(session):
     cluster_info = session.get(url=CLOUD_URL+'/api/applications/'+CLOUD_APPLICATION+'/clusters/'+CLOUD_CLUSTER+'/dev/server_groups/'+CLOUD_SERVER_GROUP,
                                verify=False)
-    # print(cluster_info.json())
-    return cluster_info.json()['instanceCounts']['total']
+    #print(cluster_info.json()['instanceCounts']['total'])
+    return int(cluster_info.json()['instanceCounts']['total'])
 
 
 def resizing_cluster(new_instance_count, session):
@@ -77,7 +77,7 @@ def resizing_cluster(new_instance_count, session):
                                     'min': '2', 'max': new_instance_count},
                               verify=False)
     print('resizing east' + str(resize_east))
-    time.sleep(1000)
+    time.sleep(60)
 
 
 def percentage_change(new_instance_count, current_instance_count):
