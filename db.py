@@ -32,7 +32,7 @@ def get_forecast_last_run():
     engine = create_engine(postgres_str)
     current_dt =  str(date.today())
     print(current_dt)
-    sql = "SELECT yhat FROM oph_forecast where manual_override = false ORDER BY ds DESC LIMIT 1;".format("'"+current_dt+"'")
+    sql = "SELECT yhat FROM oph_forecast where manual_override = false ORDER BY ds DESC LIMIT 1;"
     #sql = "select yhat,manual_override,override_order_per_hr  where ds>{}from oph_forecast order by ds DESC  limit 1"
     result = engine.execute(sql)
     #print(result.fetchone()) # always comment this out when running the script
