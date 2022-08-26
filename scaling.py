@@ -2,21 +2,21 @@ import requests
 from config import CLOUD_URL, CLOUD_APPLICATION, CLOUD_SERVER_GROUP, CLOUD_CLUSTER, CLOUD_USER, CLOUD_PASSWORD
 import time
 
-
-def resize_cluster_batch(scaling_diff, session):
-    for i in range(round(abs(scaling_diff)/4)):
-       resizing_cluster(4, session)
+## scale up or down 4 instances at a time
+def resize_cluster_batch(new_instance_count, current_instance_count, session):
+    for i in range(1, round(abs(new_instance_count/4))):  
+       resizing_cluster(((4 * i) + current_instance_count), session) # extra buffer for rounding offset
     print('Update completed')
 
 
 def resize_cluster(new_instance_count):
-    print("Updating cluster with new capacity", new_instance_count)
+    print("Updating cluster with new capacity per region", new_instance_count)
     min_capacity = 2
     if(new_instance_count is not None):
-        new_instance_count = round(new_instance_count)
+        new_instance_count = round(new_instance_count) ## central and east 
         if(new_instance_count > min_capacity):
             session = fetch_session()
-            current_instance_count = fetch_current_cluster(session)
+            current_instance_count = fetch_current_cluster(session)/2  # total count by region
             print("current instance count ",current_instance_count)
             if(new_instance_count != current_instance_count):
                 scaling_perct = percentage_change(
@@ -24,14 +24,14 @@ def resize_cluster(new_instance_count):
                 print("perct", scaling_perct)
                 scaling_diff = new_instance_count - current_instance_count
                 print("scaling_diff", scaling_diff)
-                if(abs(scaling_perct) > 1.0):  # scale only if diff % more than 1%
+                if(scaling_perct > 0.50):  # scale only if diff % more than 0.5%
                     # batch it and call method scale cluster iteratively
-                    # to avoud scaling more than 4 at a time
-                    resize_cluster_batch(scaling_diff, session)
+                    # to avoid scaling more than 4 at a time with buffer 2
+                    resize_cluster_batch(new_instance_count + 2 , current_instance_count , session) # buffer added
                 # only do scale up if diff is less than 1%
-                elif(abs(scaling_perct) <= 1.0 and scaling_diff < 0):
-                    print("only scaling up") # no need to scale down if less than 1%
-                    resize_cluster_batch(scaling_diff, session)
+                elif(scaling_perct <= -1.0 and scaling_diff < 0): # negative numbers
+                    print("only scaling down") # no need to scale down if less than 1%
+                    resize_cluster_batch(new_instance_count , 0, session)
                 else:
                     print("No need to scale as difference is not much")
             else:
