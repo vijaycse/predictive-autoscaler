@@ -7,7 +7,7 @@ def resize_server_capacity():
     forecast = get_forecast_next_run()
 
     if(forecast is not None and len(forecast) > 0):
-        if(forecast[1]):
+        if(forecast[1]):  # manual override is enabled
             new_instance_count = get_new_capacity(int(forecast[2]))
         else:
             new_instance_count = get_new_capacity(int(forecast[0]))
@@ -15,7 +15,7 @@ def resize_server_capacity():
         forecast = get_forecast_last_run()
         new_instance_count = get_new_capacity(int(forecast[0]))
     
-    print("new cluster size",new_instance_count)
+    print("new cluster size in each region",new_instance_count)
     resize_cluster(new_instance_count)
 
 def get_new_capacity(forecast):
@@ -38,7 +38,7 @@ def get_new_capacity(forecast):
     else:
         new_capacity = None
 
-    print("new_capacity",new_capacity)
+    print("new_capacity per region",new_capacity)
     return int(new_capacity)
 
 
