@@ -2,10 +2,12 @@ import requests
 from config import CLOUD_URL, CLOUD_APPLICATION, CLOUD_SERVER_GROUP, CLOUD_CLUSTER, CLOUD_USER, CLOUD_PASSWORD
 import time
 
-## scale up or down 4 instances at a time
+# scale up or down 4 instances at a time
+
+
 def resize_cluster_batch(new_instance_count, current_instance_count, session):
-    for i in range(1, round(abs(new_instance_count/4))):  
-       resizing_cluster(((4 * i) + current_instance_count), session) # extra buffer for rounding offset
+    for i in range(1, round(abs(new_instance_count/4))):
+        resizing_cluster(((4 * i) + current_instance_count), session)
     print('Update completed')
 
 
@@ -13,25 +15,28 @@ def resize_cluster(new_instance_count):
     print("Updating cluster with new capacity per region", new_instance_count)
     min_capacity = 2
     if(new_instance_count is not None):
-        new_instance_count = round(new_instance_count) ## central and east 
+        new_instance_count = round(new_instance_count)  # central and east
         if(new_instance_count > min_capacity):
             session = fetch_session()
-            current_instance_count = fetch_current_cluster(session)/2  # total count by region
-            print("current instance count ",current_instance_count)
+            current_instance_count = fetch_current_cluster(
+                session)/2  # total count by region
+            print("current instance count ", current_instance_count)
             if(new_instance_count != current_instance_count):
                 scaling_perct = percentage_change(
                     new_instance_count, current_instance_count)
-                print("perct", scaling_perct)
+                print("diff_perct", scaling_perct)
                 scaling_diff = new_instance_count - current_instance_count
                 print("scaling_diff", scaling_diff)
                 if(scaling_perct > 0.50):  # scale only if diff % more than 0.5%
                     # batch it and call method scale cluster iteratively
                     # to avoid scaling more than 4 at a time with buffer 2
-                    resize_cluster_batch(new_instance_count + 2 , current_instance_count , session) # buffer added
+                    resize_cluster_batch(
+                        new_instance_count + 2, current_instance_count, session)  # buffer added
                 # only do scale up if diff is less than 1%
-                elif(scaling_perct <= -1.0 and scaling_diff < 0): # negative numbers
-                    print("only scaling down") # no need to scale down if less than 1%
-                    resize_cluster_batch(new_instance_count , 0, session)
+                elif(scaling_perct <= -1.0 and scaling_diff < 0):  # negative numbers
+                    # no need to scale down if less than 1%
+                    print("only scaling down")
+                    resize_cluster_batch(new_instance_count, 0, session)
                 else:
                     print("No need to scale as difference is not much")
             else:
@@ -44,6 +49,7 @@ def resize_cluster(new_instance_count):
 
 
 def fetch_session():
+    requests.packages.urllib3.disable_warnings()
     session = requests.Session()
     session.headers['Content-Type'] = 'application/json'
     token_response = session.post(url=CLOUD_URL+'/login',
@@ -59,7 +65,7 @@ def fetch_session():
 def fetch_current_cluster(session):
     cluster_info = session.get(url=CLOUD_URL+'/api/applications/'+CLOUD_APPLICATION+'/clusters/'+CLOUD_CLUSTER+'/dev/server_groups/'+CLOUD_SERVER_GROUP,
                                verify=False)
-    #print(cluster_info.json()['instanceCounts']['total'])
+    # print(cluster_info.json()['instanceCounts']['total'])
     return int(cluster_info.json()['instanceCounts']['total'])
 
 
@@ -77,7 +83,7 @@ def resizing_cluster(new_instance_count, session):
                                     'min': '2', 'max': new_instance_count},
                               verify=False)
     print('resizing east' + str(resize_east))
-    time.sleep(60)
+    time.sleep(20)
 
 
 def percentage_change(new_instance_count, current_instance_count):
