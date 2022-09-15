@@ -1,0 +1,10 @@
+SQLAlchemy
+requests~=2.25.1
+sqlalchemy
+psycopg2-binary
+urllib3~=1.26.4
+flask
+targetoss_tappy
+flask_apscheduler
+kafka-python
+asyncio

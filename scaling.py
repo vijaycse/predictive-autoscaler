@@ -5,19 +5,19 @@ import time
 # scale up or down 4 instances at a time
 
 
-def resize_cluster_batch(new_instance_count, current_instance_count, session):
+def resize_cluster_batch(new_instance_count, current_instance_count, session, configuration_data=dict()):
     for i in range(1, round(abs(new_instance_count/4))):
-        resizing_cluster(((4 * i) + current_instance_count), session)
+        resizing_cluster(((4 * i) + current_instance_count), session,configuration_data)
     print('Update completed')
 
 
-def resize_cluster(new_instance_count):
+def resize_cluster(new_instance_count, configuration_data=dict()):
     print("Updating cluster with new capacity per region", new_instance_count)
     min_capacity = 2
     if(new_instance_count is not None):
         new_instance_count = round(new_instance_count)  # central and east
         if(new_instance_count > min_capacity):
-            session = fetch_session()
+            session = fetch_session(configuration_data)
             current_instance_count = fetch_current_cluster(
                 session)/2  # total count by region
             print("current instance count ", current_instance_count)
@@ -31,12 +31,12 @@ def resize_cluster(new_instance_count):
                     # batch it and call method scale cluster iteratively
                     # to avoid scaling more than 4 at a time with buffer 2
                     resize_cluster_batch(
-                        new_instance_count + 2, current_instance_count, session)  # buffer added
+                        new_instance_count + 2, current_instance_count, session, configuration_data)  # buffer added
                 # only do scale up if diff is less than 1%
                 elif(scaling_perct <= -1.0 and scaling_diff < 0):  # negative numbers
                     # no need to scale down if less than 1%
                     print("only scaling down")
-                    resize_cluster_batch(new_instance_count, 0, session)
+                    resize_cluster_batch(new_instance_count, 0, session ,configuration_data)
                 else:
                     print("No need to scale as difference is not much")
             else:
@@ -48,7 +48,13 @@ def resize_cluster(new_instance_count):
         print('no change needed', new_instance_count)
 
 
-def fetch_session():
+def fetch_session(configuration_data=dict()):
+    if(configuration_data):
+        tap_details = conf.data["tap"]
+        CLOUD_URL = tap_details["url"]
+        CLOUD_USER = tap_details["user"]
+        CLOUD_PASSWORD = tap_details["password"]
+
     requests.packages.urllib3.disable_warnings()
     session = requests.Session()
     session.headers['Content-Type'] = 'application/json'
@@ -62,14 +68,25 @@ def fetch_session():
 # TODO: fetch list of all server groups to get the active one. remove hard coded value
 
 
-def fetch_current_cluster(session):
+def fetch_current_cluster(session, configuration_data=dict()):
+    if(configuration_data):
+        tap_details = conf.data["tap"]
+        CLOUD_APPLICATION = tap_details["app"]
+        CLOUD_CLUSTER = tap_details["cluster"]
+        CLOUD_SERVER_GROUP = tap_details["server_group"]
+
     cluster_info = session.get(url=CLOUD_URL+'/api/applications/'+CLOUD_APPLICATION+'/clusters/'+CLOUD_CLUSTER+'/dev/server_groups/'+CLOUD_SERVER_GROUP,
                                verify=False)
     # print(cluster_info.json()['instanceCounts']['total'])
     return int(cluster_info.json()['instanceCounts']['total'])
 
 
-def resizing_cluster(new_instance_count, session):
+def resizing_cluster(new_instance_count, session, configuration_data=dict()):
+    if(configuration_data):
+        tap_details = conf.data["tap"]
+        CLOUD_APPLICATION = tap_details["app"]
+        CLOUD_CLUSTER = tap_details["cluster"]
+        CLOUD_SERVER_GROUP = tap_details["server_group"]
 
     print('resizing Capacity', str(new_instance_count))
     resize_central = session.put(url=CLOUD_URL+'/api/applications/'+CLOUD_APPLICATION+'/clusters/'+CLOUD_CLUSTER+'/dev/server_groups/'+CLOUD_SERVER_GROUP+'/resize',

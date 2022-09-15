@@ -3,8 +3,8 @@ from db import get_forecast_next_run, get_forecast_last_run
 from scaling import resize_cluster
 
 
-def resize_server_capacity():
-    forecast = get_forecast_next_run()
+def resize_server_capacity(configuration_data=dict()):
+    forecast = get_forecast_next_run(configuration_data)
 
     if(forecast is not None and len(forecast) > 0):
         if(forecast[1]):  # manual override is enabled
@@ -13,11 +13,11 @@ def resize_server_capacity():
             new_instance_count = get_new_capacity(int(forecast[0]))
     else:  # if no data found, get the last known value
         print(" no schedule found, resetting to default value")
-        forecast = get_forecast_last_run()
+        forecast = get_forecast_last_run(configuration_data)
         new_instance_count = get_new_capacity(int(forecast[0]))
     
     print("new cluster size in each region",new_instance_count)
-    resize_cluster(new_instance_count)
+    resize_cluster(new_instance_count,configuration_data)
 
 ##TODO: need to get this mapping from config
 ## OPH /TPS is total regardless of the regions. we need to divide the number by region
