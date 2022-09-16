@@ -3,6 +3,7 @@ from flask import Flask, jsonify
 from targetoss_tappy import Configuration
 import targetoss_tappy as tappy
 from flask_apscheduler import APScheduler
+from controller import resize_server_capacity
 
 app = Flask(__name__)
 
@@ -33,21 +34,16 @@ def scheduleScalingTask(configuration_data):
 
 @scheduler.task('cron', id='do_job_1', hour=0, minute='1')
 def job(configuration_data=dict()):
-    conf = Configuration()
-    if(conf.data):
-        job_details = conf.data["job"]
-        job_hr = job_details["hour"]
-        job_minute = job_details["minute"]
+    if tappy.in_tap():
+        config = get_tap_config()
     else:
-        job_hr = 1
-        job_minute = 20
+        config = Configuration()
 
     app.logger.info("Job scheduler details {} {} ".format(job_hr, job_minute))
     # add more jobs bot_scanner job later
-    scheduleScalingTask(configuration_data)
+    scheduleScalingTask(config)
 
 if __name__ == '__main__':
-    conf = Configuration()
    # app.config.from_object(Config())
     scheduler.init_app(app)
     scheduler.start()

@@ -9,11 +9,11 @@ def get_forecast_next_run(configuration_data=dict()):
     this returns only (one row) the next possible forecast count """
 
     if(configuration_data):
-        db_details = conf.data["db"]
+        db_details = configuration_data["db"]
         POSTGRES_ADDRESS = db_details["address"]
         POSTGRES_DBNAME = db_details["dbname"]
         POSTGRES_USERNAME = db_details["user"]
-        POSTGRES_PASSWORD = db_details["password"]
+        POSTGRES_PASSWORD = configuration_data["db_password"]
         POSTGRES_PORT = db_details["port"]
 
     postgres_str = ('postgresql://{username}:{password}@{ipaddress}:{port}/{dbname}'
@@ -35,11 +35,11 @@ def get_forecast_last_run(configuration_data=dict()):
     this returns only (one row) the last known count """
 
     if(configuration_data):
-        db_details = conf.data["db"]
+        db_details = configuration_data["db"]
         POSTGRES_ADDRESS = db_details["address"]
         POSTGRES_DBNAME = db_details["dbname"]
         POSTGRES_USERNAME = db_details["user"]
-        POSTGRES_PASSWORD = db_details["password"]
+        POSTGRES_PASSWORD = configuration_data["db_password"]
         POSTGRES_PORT = db_details["port"]
 
     postgres_str = ('postgresql://{username}:{password}@{ipaddress}:{port}/{dbname}'

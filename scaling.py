@@ -50,10 +50,10 @@ def resize_cluster(new_instance_count, configuration_data=dict()):
 
 def fetch_session(configuration_data=dict()):
     if(configuration_data):
-        tap_details = conf.data["tap"]
+        tap_details = configuration_data["tap"]
         CLOUD_URL = tap_details["url"]
         CLOUD_USER = tap_details["user"]
-        CLOUD_PASSWORD = tap_details["password"]
+        CLOUD_PASSWORD = configuration_data["tap_password"]
 
     requests.packages.urllib3.disable_warnings()
     session = requests.Session()
@@ -70,7 +70,7 @@ def fetch_session(configuration_data=dict()):
 
 def fetch_current_cluster(session, configuration_data=dict()):
     if(configuration_data):
-        tap_details = conf.data["tap"]
+        tap_details = configuration_data["tap"]
         CLOUD_APPLICATION = tap_details["app"]
         CLOUD_CLUSTER = tap_details["cluster"]
         CLOUD_SERVER_GROUP = tap_details["server_group"]
@@ -83,7 +83,7 @@ def fetch_current_cluster(session, configuration_data=dict()):
 
 def resizing_cluster(new_instance_count, session, configuration_data=dict()):
     if(configuration_data):
-        tap_details = conf.data["tap"]
+        tap_details = configuration_data["tap"]
         CLOUD_APPLICATION = tap_details["app"]
         CLOUD_CLUSTER = tap_details["cluster"]
         CLOUD_SERVER_GROUP = tap_details["server_group"]
