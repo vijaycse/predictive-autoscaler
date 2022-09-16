@@ -1,4 +1,4 @@
-# autoscaler-v1
+# scheduled-scaler
 
 ## Problem Statement:
 
@@ -10,7 +10,7 @@
   CPU & memory usage that may not neccessarily be the correct measures to scale up 
   the infrastructure.
 
-  The Idea is to predict the TPS/order trend and scale up and down instances ahead of time
+  The Idea is to predict the TPS/order trend and scale up and down instances ahead of time esp. for promotional days
 #### Overview:
 
   This micro-batch runs every hours to read from predicted TPS/order_count from a PG 
