@@ -1,4 +1,4 @@
-FROM python:3.8
+FROM python:3.9
 
 LABEL MAINTAINER = "Vijay Ram"
 
@@ -17,7 +17,7 @@ ENV SSL_CERT_FILE=/opt/tgt-ca-bundle.crt
 ############################################
 # install tap connector
 ############################################
-ENV RUNTIME_VERSION=v1.0.3
+ENV RUNTIME_VERSION=v2.4.3
 RUN curl -sk "https://binrepo.target.com/artifactory/platform/runtime-connector/${RUNTIME_VERSION}/runtime-connector-linux-amd64-${RUNTIME_VERSION}.tgz" -o /runtime-connector.tgz && tar xvzf /runtime-connector.tgz -C / && rm /runtime-connector.tgz
 
 
