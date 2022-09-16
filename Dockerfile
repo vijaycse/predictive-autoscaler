@@ -37,4 +37,4 @@ RUN python -m pip install \
 EXPOSE 8080
 
 # Start Container
-CMD ["/runtime-connector", "--", "python", "app/app.py"]
+CMD ["/runtime-connector", "--", "python", "app.py"]
