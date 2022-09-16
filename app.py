@@ -32,7 +32,7 @@ def scheduleScalingTask(configuration_data):
 
 
 
-@scheduler.task('cron', id='do_job_1', hour=15, minute='10')
+@scheduler.task('cron', id='do_job_1', hour=15, minute='15')
 def job(configuration_data=dict()):
     if tappy.in_tap():
         config = get_tap_config()
