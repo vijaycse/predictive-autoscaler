@@ -32,14 +32,14 @@ def scheduleScalingTask(configuration_data):
 
 
 
-@scheduler.task('cron', id='do_job_1', hour=0, minute='1')
+@scheduler.task('cron', id='do_job_1', hour=15, minute='10')
 def job(configuration_data=dict()):
     if tappy.in_tap():
         config = get_tap_config()
     else:
         config = Configuration()
 
-    app.logger.info("Job scheduler details {} {} ".format(job_hr, job_minute))
+    app.logger.info("Job scheduler details {} ".format(config.data))
     # add more jobs bot_scanner job later
     scheduleScalingTask(config)
 
@@ -47,6 +47,4 @@ if __name__ == '__main__':
    # app.config.from_object(Config())
     scheduler.init_app(app)
     scheduler.start()
-
-    app.run()
     app.run(debug=False, use_reloader=False, host='0.0.0.0', port=8080)

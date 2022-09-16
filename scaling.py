@@ -1,6 +1,8 @@
 import requests
 from config import CLOUD_URL, CLOUD_APPLICATION, CLOUD_SERVER_GROUP, CLOUD_CLUSTER, CLOUD_USER, CLOUD_PASSWORD
 import time
+from targetoss_tappy import Configuration
+import targetoss_tappy as tappy
 
 # scale up or down 4 instances at a time
 
@@ -49,18 +51,22 @@ def resize_cluster(new_instance_count, configuration_data=dict()):
 
 
 def fetch_session(configuration_data=dict()):
-    if(configuration_data):
+    if(configuration_data and tappy.in_tap()):
         tap_details = configuration_data["tap"]
-        CLOUD_URL = tap_details["url"]
-        CLOUD_USER = tap_details["user"]
-        CLOUD_PASSWORD = configuration_data["tap_password"]
+        tap_url = tap_details["url"]
+        tap_user = tap_details["user"]
+        tap_password = tap_details["tap_password"]
+    else:
+        tap_user = CLOUD_USER
+        tap_password = CLOUD_PASSWORD
+        tap_url = CLOUD_URL
 
     requests.packages.urllib3.disable_warnings()
     session = requests.Session()
     session.headers['Content-Type'] = 'application/json'
-    token_response = session.post(url=CLOUD_URL+'/login',
-                                  json={'username': CLOUD_USER,
-                                        'password': CLOUD_PASSWORD},
+    token_response = session.post(url=tap_url+'/login',
+                                  json={'username': tap_user,
+                                        'password': tap_password},
                                   verify=False)
     # print("token",token_response)
     return session
@@ -69,33 +75,46 @@ def fetch_session(configuration_data=dict()):
 
 
 def fetch_current_cluster(session, configuration_data=dict()):
-    if(configuration_data):
+    if(configuration_data and tappy.in_tap()):
         tap_details = configuration_data["tap"]
-        CLOUD_APPLICATION = tap_details["app"]
-        CLOUD_CLUSTER = tap_details["cluster"]
-        CLOUD_SERVER_GROUP = tap_details["server_group"]
+        tap_url = tap_details["url"]
+        tap_app = tap_details["app"]
+        tap_cluster = tap_details["cluster"]
+        tap_server_group = tap_details["server_group"]
+    else:
+        tap_app = CLOUD_APPLICATION
+        tap_cluster = CLOUD_CLUSTER
+        tap_server_group = CLOUD_SERVER_GROUP
+        tap_url = CLOUD_URL
 
-    cluster_info = session.get(url=CLOUD_URL+'/api/applications/'+CLOUD_APPLICATION+'/clusters/'+CLOUD_CLUSTER+'/dev/server_groups/'+CLOUD_SERVER_GROUP,
+
+    cluster_info = session.get(url=tap_url+'/api/applications/'+tap_app+'/clusters/'+tap_cluster+'/dev/server_groups/'+tap_server_group,
                                verify=False)
     # print(cluster_info.json()['instanceCounts']['total'])
     return int(cluster_info.json()['instanceCounts']['total'])
 
 
 def resizing_cluster(new_instance_count, session, configuration_data=dict()):
-    if(configuration_data):
+    if(configuration_data and tappy.in_tap()):
         tap_details = configuration_data["tap"]
-        CLOUD_APPLICATION = tap_details["app"]
-        CLOUD_CLUSTER = tap_details["cluster"]
-        CLOUD_SERVER_GROUP = tap_details["server_group"]
+        tap_url = tap_details["url"]
+        tap_app = tap_details["app"]
+        tap_cluster = tap_details["cluster"]
+        tap_server_group = tap_details["server_group"]
+    else:
+        tap_app = CLOUD_APPLICATION
+        tap_cluster = CLOUD_CLUSTER
+        tap_server_group = CLOUD_SERVER_GROUP
+        tap_url = CLOUD_URL
 
     print('resizing Capacity', str(new_instance_count))
-    resize_central = session.put(url=CLOUD_URL+'/api/applications/'+CLOUD_APPLICATION+'/clusters/'+CLOUD_CLUSTER+'/dev/server_groups/'+CLOUD_SERVER_GROUP+'/resize',
+    resize_central = session.put(url=tap_url+'/api/applications/'+tap_app+'/clusters/'+tap_cluster+'/dev/server_groups/'+tap_server_group+'/resize',
                                  json={'region': 'us-central1', 'desired': new_instance_count,
                                        'min': '2', 'max': new_instance_count},
                                  verify=False)
     print('resizing central' + str(resize_central))
 
-    resize_east = session.put(url=CLOUD_URL+'/api/applications/'+CLOUD_APPLICATION+'/clusters/'+CLOUD_CLUSTER+'/dev/server_groups/'+CLOUD_SERVER_GROUP+'/resize',
+    resize_east = session.put(url=tap_url+'/api/applications/'+tap_app+'/clusters/'+tap_cluster+'/dev/server_groups/'+tap_server_group+'/resize',
                               json={'region': 'us-east1', 'desired': new_instance_count,
                                     'min': '2', 'max': new_instance_count},
                               verify=False)

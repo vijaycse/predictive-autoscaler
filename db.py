@@ -3,21 +3,29 @@ from sqlalchemy.orm import close_all_sessions
 from datetime import date
 from config import POSTGRES_ADDRESS, POSTGRES_USERNAME, POSTGRES_PASSWORD, POSTGRES_DBNAME ,POSTGRES_PORT
 from dateutil.relativedelta import relativedelta
+from targetoss_tappy import Configuration
+import targetoss_tappy as tappy
 
 def get_forecast_next_run(configuration_data=dict()):
     """ query near future estimated order count from the oph_forecast table. 
     this returns only (one row) the next possible forecast count """
 
-    if(configuration_data):
+    if(configuration_data and tappy.in_tap()):
         db_details = configuration_data["db"]
-        POSTGRES_ADDRESS = db_details["address"]
-        POSTGRES_DBNAME = db_details["dbname"]
-        POSTGRES_USERNAME = db_details["user"]
-        POSTGRES_PASSWORD = configuration_data["db_password"]
-        POSTGRES_PORT = db_details["port"]
+        db_host = db_details["address"]
+        db_name = db_details["dbname"]
+        db_user = db_details["user"]
+        db_password = configuration_data["db_password"]
+        db_port = db_details["port"]
+    else:
+        db_user = POSTGRES_USERNAME
+        db_port = POSTGRES_PORT
+        db_password = POSTGRES_PASSWORD
+        db_host = POSTGRES_ADDRESS
+        db_name = POSTGRES_DBNAME
 
     postgres_str = ('postgresql://{username}:{password}@{ipaddress}:{port}/{dbname}'
-    .format(username=POSTGRES_USERNAME,password=POSTGRES_PASSWORD,ipaddress=POSTGRES_ADDRESS,port=POSTGRES_PORT,dbname=POSTGRES_DBNAME))
+    .format(username=db_user,password=db_password,ipaddress=db_host,port=db_port,dbname=db_name))
 
     engine = create_engine(postgres_str)
     current_dt = date.today()
@@ -34,18 +42,25 @@ def get_forecast_last_run(configuration_data=dict()):
     """ query near future estimated order count from the oph_forecast table. 
     this returns only (one row) the last known count """
 
-    if(configuration_data):
+    if(configuration_data and tappy.in_tap()):
         db_details = configuration_data["db"]
-        POSTGRES_ADDRESS = db_details["address"]
-        POSTGRES_DBNAME = db_details["dbname"]
-        POSTGRES_USERNAME = db_details["user"]
-        POSTGRES_PASSWORD = configuration_data["db_password"]
-        POSTGRES_PORT = db_details["port"]
+        db_host = db_details["address"]
+        db_name = db_details["dbname"]
+        db_user = db_details["user"]
+        db_password = configuration_data["db_password"]
+        db_port = db_details["port"]
+    else:
+        db_user = POSTGRES_USERNAME
+        db_port = POSTGRES_PORT
+        db_password = POSTGRES_PASSWORD
+        db_host = POSTGRES_ADDRESS
+        db_name = POSTGRES_DBNAME
 
     postgres_str = ('postgresql://{username}:{password}@{ipaddress}:{port}/{dbname}'
-    .format(username=POSTGRES_USERNAME,password=POSTGRES_PASSWORD,ipaddress=POSTGRES_ADDRESS,port=POSTGRES_PORT,dbname=POSTGRES_DBNAME))
+    .format(username=db_user,password=db_password,ipaddress=db_host,port=db_port,dbname=db_name))
 
     engine = create_engine(postgres_str)
+    print("looking for default ")
     sql = "SELECT yhat FROM oph_forecast where manual_override = false ORDER BY ds DESC LIMIT 1;"
     #sql = "select yhat,manual_override,override_order_per_hr  where ds>{}from oph_forecast order by ds DESC  limit 1"
     result = engine.execute(sql)
