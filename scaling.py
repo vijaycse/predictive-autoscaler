@@ -1,11 +1,12 @@
 import requests
-from config import CLOUD_URL, CLOUD_APPLICATION, CLOUD_SERVER_GROUP, CLOUD_CLUSTER, CLOUD_USER, CLOUD_PASSWORD
+from config import CLOUD_URL, CLOUD_APPLICATION, CLOUD_SERVER_GROUP, CLOUD_CLUSTER, CLOUD_USER, CLOUD_PASSWORD,CLOUD_ENVIRONMENT
 import time
 from targetoss_tappy import Configuration
 import targetoss_tappy as tappy
 
 # scale up or down 4 instances at a time
 
+## refactor to be a class
 
 def resize_cluster_batch(new_instance_count, current_instance_count, session, configuration_data=dict()):
     for i in range(1, round(abs(new_instance_count/4))):
@@ -55,11 +56,17 @@ def fetch_session(configuration_data=dict()):
         tap_details = configuration_data["tap"]
         tap_url = tap_details["url"]
         tap_user = tap_details["user"]
-        tap_password = tap_details["tap_password"]
+        tap_password = configuration_data["tap_password"]
+        tap_env = os.getenv('CLOUD_ENVIRONMENT') 
+        tap_app = tap_details["app"]
+        tap_cluster = tap_details["cluster"]
     else:
         tap_user = CLOUD_USER
         tap_password = CLOUD_PASSWORD
         tap_url = CLOUD_URL
+        tap_env = CLOUD_ENVIRONMENT
+        tap_app = CLOUD_APPLICATION
+        tap_cluster = CLOUD_CLUSTER
 
     requests.packages.urllib3.disable_warnings()
     session = requests.Session()
@@ -72,7 +79,21 @@ def fetch_session(configuration_data=dict()):
     return session
 
 # TODO: fetch list of all server groups to get the active one. remove hard coded value
-
+def fetch_server_group(session, configuration_data=dict()):
+    if(configuration_data and tappy.in_tap()):
+        tap_details = configuration_data["tap"]
+        tap_url = tap_details["url"]
+        tap_app = tap_details["app"]
+        tap_cluster = tap_details["cluster"]
+        tap_env = os.getenv('CLOUD_ENVIRONMENT') 
+    else:
+        tap_app = CLOUD_APPLICATION
+        tap_cluster = CLOUD_CLUSTER
+        tap_url = CLOUD_URL
+        tap_env = CLOUD_ENVIRONMENT
+    server_group_info = session.get(url=tap_url+'/api/applications/'+tap_app+'/clusters/'+tap_cluster+'/'+tap_env+'/server_groups/',
+                               verify=False)
+    return server_group_info.json()['data'][0]['name']
 
 def fetch_current_cluster(session, configuration_data=dict()):
     if(configuration_data and tappy.in_tap()):
@@ -80,33 +101,32 @@ def fetch_current_cluster(session, configuration_data=dict()):
         tap_url = tap_details["url"]
         tap_app = tap_details["app"]
         tap_cluster = tap_details["cluster"]
-        tap_server_group = tap_details["server_group"]
+        tap_env = os.getenv('CLOUD_ENVIRONMENT') 
     else:
         tap_app = CLOUD_APPLICATION
         tap_cluster = CLOUD_CLUSTER
-        tap_server_group = CLOUD_SERVER_GROUP
         tap_url = CLOUD_URL
+        tap_env = CLOUD_ENVIRONMENT
 
-
-    cluster_info = session.get(url=tap_url+'/api/applications/'+tap_app+'/clusters/'+tap_cluster+'/dev/server_groups/'+tap_server_group,
+    tap_server_group = fetch_server_group(session=session,configuration_data=configuration_data)
+    cluster_info = session.get(url=tap_url+'/api/applications/'+tap_app+'/clusters/'+tap_cluster+'/'+tap_env+'/server_groups/'+tap_server_group,
                                verify=False)
     # print(cluster_info.json()['instanceCounts']['total'])
     return int(cluster_info.json()['instanceCounts']['total'])
 
 
-def resizing_cluster(new_instance_count, session, configuration_data=dict()):
+def resizing_cluster(new_instance_count, session, server_group ,configuration_data=dict()):
     if(configuration_data and tappy.in_tap()):
         tap_details = configuration_data["tap"]
         tap_url = tap_details["url"]
         tap_app = tap_details["app"]
         tap_cluster = tap_details["cluster"]
-        tap_server_group = tap_details["server_group"]
     else:
         tap_app = CLOUD_APPLICATION
         tap_cluster = CLOUD_CLUSTER
-        tap_server_group = CLOUD_SERVER_GROUP
         tap_url = CLOUD_URL
 
+    tap_server_group = fetch_server_group(session=session,configuration_data=configuration_data)
     print('resizing Capacity', str(new_instance_count))
     resize_central = session.put(url=tap_url+'/api/applications/'+tap_app+'/clusters/'+tap_cluster+'/dev/server_groups/'+tap_server_group+'/resize',
                                  json={'region': 'us-central1', 'desired': new_instance_count,
@@ -128,4 +148,4 @@ def percentage_change(new_instance_count, current_instance_count):
 
 
 if __name__ == '__main__':
-    resize_cluster()
+    resize_cluster(10)
