@@ -1,38 +1,28 @@
 version: "1"
 
-steps:
-  - name: build_docker_image
-    image: docker.target.com/vela-plugins/kaniko:v0.6.0-1
-    pull: true
-    secrets: [ docker_username, docker_password ]
-    ruleset:
-      branch: main
-      event: push
-    parameters:
-      dry_run: true
-      dockerfile: Dockerfile
-      registry: docker.target.com
-      repo: docker.target.com/checkout/scheduled-scaler
-      tags: ["scheduled-scaler-latest"]
-
-  - name: publish_docker_image
-    image: docker.target.com/vela-plugins/kaniko:v0.6.0-1
-    pull: true
-    secrets: [docker_username, docker_password]
-    ruleset:
-      event: [tag]
-    parameters:
-      registry: docker.target.com
-      repo: docker.target.com/checkout/scheduled-scaler
-      tags:  ["${BUILD_TAG}"]
-
 secrets:
-  # Declarative organization secret definition
   - name: docker_username
     key: ecco/docker_username
     engine: native
     type: org
   - name: docker_password
-    key: ecco/artifactory_password_111920
+    key: ecco/docker_password
     engine: native
     type: org
+
+steps:
+  - name: build and publish image to artifactory
+    image: docker.target.com/vela-plugins/kaniko:v0.7.0-1
+    ruleset:
+      branch:
+        - main
+      event:
+        - push
+    secrets:
+      - docker_username
+      - docker_password
+    parameters:
+      registry: docker.target.com
+      repo: docker.target.com/checkout/scheduled-scaler
+      tags:
+        - "b${BUILD_NUMBER}-${BUILD_COMMIT:0:8}"
