@@ -6,7 +6,7 @@ steps:
     pull: true
     secrets: [ docker_username, docker_password ]
     ruleset:
-      branch: master
+      branch: main
       event: push
     parameters:
       dry_run: true
