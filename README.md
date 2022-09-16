@@ -1,4 +1,4 @@
-# scheduled-scaler-v1
+# scheduled-scaler
 
 ## Problem Statement:
 
