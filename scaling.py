@@ -3,6 +3,7 @@ from config import CLOUD_URL, CLOUD_APPLICATION, CLOUD_SERVER_GROUP, CLOUD_CLUST
 import time
 from targetoss_tappy import Configuration
 import targetoss_tappy as tappy
+import os 
 
 # scale up or down 4 instances at a time
 
@@ -28,12 +29,12 @@ class Scaling:
     def resize_cluster(self, new_instance_count):
         print("Updating cluster with new capacity per region", new_instance_count)
         min_capacity = 50
-        if(self.tap_env == 'dev'):   # if this is dev, just cut down to quarter
+        if(self.tap_env == 'dev'):   # if this is dev, just cut down to quarter resources
             new_instance_count = round(new_instance_count/4)
             min_capacity = round(min_capacity/4)
             print("dev instance count ", new_instance_count)
         if(new_instance_count is not None):
-            new_instance_count = round(new_instance_count)  # central and east
+            new_instance_count = round(new_instance_count)
             if(new_instance_count > min_capacity):
                 session = self.fetch_session()
                 server_group, current_instance_count = self.fetch_current_cluster(
@@ -52,7 +53,7 @@ class Scaling:
                         self.resize_cluster_batch(
                             new_instance_count + 2, current_instance_count, session, server_group, self.tap_app, self.tap_cluster)  # buffer added
                         self.resize_cluster_batch( ## secondary instance count reduce by 10 
-                            round(new_instance_count / 10), current_instance_count, session, server_group, self.tap_app_secondary, self.tap_cluster_secondary)  # buffer added
+                            round(new_instance_count / 10), current_instance_count/10, session, server_group, self.tap_app_secondary, self.tap_cluster_secondary)  # buffer added
                     # only do scale up if diff is less than 1%
                     elif(scaling_perct <= -1.0 and scaling_diff < 0):  # negative numbers
                         # no need to scale down if less than 1%

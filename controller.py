@@ -24,7 +24,6 @@ def resize_server_capacity(configuration_data=dict()):
 ##TODO: need to get this mapping from config
 ## OPH /TPS is total regardless of the regions. we need to divide the number by region
 ## e.g 300K OPH -> 300/2  150K perr region
-## - revisist to prod and if test , divide by 50%
 def get_new_capacity(forecast):
     print("forecast",forecast)
     forcast_per_region = round(forecast/2)
