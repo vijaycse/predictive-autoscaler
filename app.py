@@ -34,7 +34,7 @@ def scheduleScalingTask(config):
 #@scheduler.task('cron', id='do_job_1', hour=8, minute='30')
 def job():
     if tappy.in_tap():
-        config = get_tap_config()
+        config = tappy.Configuration().data
         job_details = config["job"]
         job_hr = db_details["hour"]
         job_min = db_details["minute"]
