@@ -36,8 +36,8 @@ def job():
     if tappy.in_tap():
         config = tappy.Configuration().data
         job_details = config["job"]
-        job_hr = db_details["hour"]
-        job_min = db_details["minute"]
+        job_hr = job_details["hour"]
+        job_min = job_details["minute"]
     else:
         config = Configuration()
         job_hr = 9
