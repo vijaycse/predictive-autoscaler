@@ -52,7 +52,7 @@ class DB:
             db_host = db_details["address"]
             db_name = db_details["dbname"]
             db_user = db_details["user"]
-            db_password = config["db_password"]
+            db_password = self.config["db_password"]
             db_port = db_details["port"]
         else:
             db_user = POSTGRES_USERNAME
