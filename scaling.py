@@ -13,30 +13,23 @@ class Scaling:
     min_capacity = 50
 
     def __init__(self, config):
-        self.tap_app,
-        self.tap_cluster,
-        self.tap_env,
-        self.tap_url,
-        self.tap_user,
-        self.tap_password,
-        self.tap_app_secondary,
-        self.tap_cluster_secondary = self.fetch_tap_details(config)
+        self.tap_app,self.tap_cluster,self.tap_env,self.tap_url,self.tap_user,self.tap_password,self.tap_app_secondary,self.tap_cluster_secondary = self.fetch_tap_details(config)
 
-    def resize_cluster_batch(self, new_instance_count, current_instance_count, session, server_group):
+    def resize_cluster_batch(self, new_instance_count, current_instance_count, session, server_group, app , cluster):
         for i in range(1, round(abs(new_instance_count/4))):
             self.resizing_cluster(((4 * i) + current_instance_count),
-                                  session, server_group)
+                                  session, server_group, app, cluster)
         print('Update completed')
 
     def resize_cluster(self, new_instance_count):
         print("Updating cluster with new capacity per region", new_instance_count)
         if(self.tap_env == 'dev'):   # if this is dev, just cut down to quarter resources
             new_instance_count = round(new_instance_count/4)
-            min_capacity = round(min_capacity/4)
+            Scaling.min_capacity = round(Scaling.min_capacity/4)
             print("dev instance count ", new_instance_count)
         if(new_instance_count is not None):
             new_instance_count = round(new_instance_count)
-            if(new_instance_count > min_capacity):
+            if(new_instance_count > Scaling.min_capacity):
                 session = self.fetch_session()
                 server_group, current_instance_count = self.fetch_current_cluster(
                     session)
@@ -96,17 +89,18 @@ class Scaling:
         # print(cluster_info.json()['instanceCounts']['total'])
         return tap_server_group, int(cluster_info.json()['instanceCounts']['total'])
 
-    def resizing_cluster(self, new_instance_count, session, server_group):
+    def resizing_cluster(self, new_instance_count, session, server_group, app, cluster):
         print('resizing Capacity', str(new_instance_count))
-        resize_central = session.put(url=self.tap_url+'/api/applications/'+self.tap_app+'/clusters/'+self.tap_cluster+'/dev/server_groups/'+server_group+'/resize',
+        
+        resize_central = session.put(url=self.tap_url+'/api/applications/'+app+'/clusters/'+cluster+'/dev/server_groups/'+server_group+'/resize',
                                      json={'region': 'us-central1', 'desired': new_instance_count,
-                                           'min': min_capacity, 'max': new_instance_count},
+                                           'min': Scaling.min_capacity, 'max': new_instance_count},
                                      verify=False)
         print('resizing central' + str(resize_central))
 
-        resize_east = session.put(url=self.tap_url+'/api/applications/'+self.tap_app+'/clusters/'+self.tap_cluster+'/dev/server_groups/'+server_group+'/resize',
+        resize_east = session.put(url=self.tap_url+'/api/applications/'+app+'/clusters/'+cluster+'/dev/server_groups/'+server_group+'/resize',
                                   json={'region': 'us-east1', 'desired': new_instance_count,
-                                        'min': min_capacity , 'max': new_instance_count},
+                                        'min': Scaling.min_capacity , 'max': new_instance_count},
                                   verify=False)
         print('resizing east' + str(resize_east))
         time.sleep(20)
@@ -135,14 +129,7 @@ class Scaling:
             tap_password = CLOUD_PASSWORD
             tap_app_secondary = CLOUD_APPLICATION_SECONDARY
             tap_cluster_secondary = CLOUD_CLUSTER_SECONDARY
-        return tap_app, 
-        tap_cluster,
-        tap_env, 
-        tap_url,
-        tap_user, 
-        tap_password,
-        tap_app_secondary, 
-        tap_cluster_secondary
+        return tap_app, tap_cluster,tap_env, tap_url,tap_user, tap_password,tap_app_secondary, tap_cluster_secondary
 
     if __name__ == '__main__':
         scale = Scaling(config=dict())
