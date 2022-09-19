@@ -4,6 +4,7 @@ import time
 from targetoss_tappy import Configuration
 import targetoss_tappy as tappy
 import os
+import math
 
 # scale up or down 4 instances at a time
 
@@ -16,10 +17,13 @@ class Scaling:
         self.tap_app,self.tap_cluster,self.tap_env,self.tap_url,self.tap_user,self.tap_password,self.tap_app_secondary,self.tap_cluster_secondary = self.fetch_tap_details(config)
 
     def resize_cluster_batch(self, new_instance_count, current_instance_count, session, server_group, app , cluster):
-        for i in range(1, round(abs(new_instance_count/4))):
+        print('scaling need for {} , new instance - {} ,current instance count - {}'.format(app,new_instance_count, current_instance_count))
+        if(new_instance_count <= 4):
+            new_instance_count = 5  #setting atleast 5 min
+        for i in range(1, math.ceil(abs(new_instance_count/4))):
             self.resizing_cluster(((4 * i) + current_instance_count),
                                   session, server_group, app, cluster)
-        print('Update completed')
+        print('Update completed for {}'.format(app))
 
     def resize_cluster(self, new_instance_count):
         print("Updating cluster with new capacity per region", new_instance_count)
@@ -32,7 +36,7 @@ class Scaling:
             if(new_instance_count > Scaling.min_capacity):
                 session = self.fetch_session()
                 server_group, current_instance_count = self.fetch_current_cluster(
-                    session)
+                    session, self.tap_app, self.tap_cluster)
                 current_instance_count = current_instance_count/2  # total count need by region
                 print("current instance count ", current_instance_count)
                 if(new_instance_count != current_instance_count):
@@ -45,9 +49,10 @@ class Scaling:
                         # batch it and call method scale cluster iteratively
                         # to avoid scaling more than 4 at a time with buffer 2
                         self.resize_cluster_batch(
-                            new_instance_count + 2, current_instance_count, session, server_group, self.tap_app, self.tap_cluster)  # buffer added
+                            new_instance_count , current_instance_count, session, server_group, self.tap_app, self.tap_cluster)   
+                        server_group, current_instance_count = self.fetch_current_cluster(session, self.tap_app_secondary, self.tap_cluster_secondary)
                         self.resize_cluster_batch(  # secondary instance count reduce by 10
-                            round(new_instance_count / 10), current_instance_count/10, session, server_group, self.tap_app_secondary, self.tap_cluster_secondary)  # buffer added
+                            math.ceil(new_instance_count / 10), (current_instance_count), session, server_group, self.tap_app_secondary, self.tap_cluster_secondary)  # buffer added
                     # only do scale up if diff is less than 1%
                     elif(scaling_perct <= -1.0 and scaling_diff < 0):  # negative numbers
                         # no need to scale down if less than 1%
@@ -55,7 +60,7 @@ class Scaling:
                         self.resize_cluster_batch(
                             new_instance_count, 0, session, server_group, self.tap_app, self.tap_cluster)
                         self.resize_cluster_batch(  # secondary instance count reduce by 10
-                            round(new_instance_count / 10), 0, session, server_group, self.tap_app_secondary, self.tap_cluster_secondary)
+                            math.ceil(new_instance_count / 10), 0, session, server_group, self.tap_app_secondary, self.tap_cluster_secondary)
                     else:
                         print("No need to scale as difference is not much")
                 else:
@@ -77,21 +82,22 @@ class Scaling:
         # print("token",token_response)
         return session
 
-    def fetch_server_group(self, session):
-        server_group_info = session.get(url=self.tap_url+'/api/applications/'+self.tap_app+'/clusters/'+self.tap_cluster+'/'+self.tap_env+'/server_groups/',
+    def fetch_server_group(self, session, app, cluster):
+        server_group_info = session.get(url=self.tap_url+'/api/applications/'+app+'/clusters/'+cluster+'/'+self.tap_env+'/server_groups/',
                                         verify=False)
         return server_group_info.json()['data'][0]['name']
 
-    def fetch_current_cluster(self, session):
-        tap_server_group = self.fetch_server_group(session=session)
-        cluster_info = session.get(url=self.tap_url+'/api/applications/'+self.tap_app+'/clusters/'+self.tap_cluster+'/'+self.tap_env+'/server_groups/'+tap_server_group,
+    def fetch_current_cluster(self, session, app, cluster):
+        tap_server_group = self.fetch_server_group(session, app, cluster)
+        print(" fetching current cluster app {} , cluster {} , server_group {}".format(app, cluster,tap_server_group))
+        cluster_info = session.get(url=self.tap_url+'/api/applications/'+app+'/clusters/'+cluster+'/'+self.tap_env+'/server_groups/'+tap_server_group,
                                    verify=False)
-        # print(cluster_info.json()['instanceCounts']['total'])
+        #print(cluster_info.json())
         return tap_server_group, int(cluster_info.json()['instanceCounts']['total'])
 
     def resizing_cluster(self, new_instance_count, session, server_group, app, cluster):
         print('resizing Capacity', str(new_instance_count))
-        
+        print(" resizing Capacity cluster app {} , cluster {} , server_group {}".format(app, cluster,server_group))
         resize_central = session.put(url=self.tap_url+'/api/applications/'+app+'/clusters/'+cluster+'/dev/server_groups/'+server_group+'/resize',
                                      json={'region': 'us-central1', 'desired': new_instance_count,
                                            'min': Scaling.min_capacity, 'max': new_instance_count},
