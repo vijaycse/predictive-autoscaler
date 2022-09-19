@@ -48,7 +48,7 @@ class DB:
 
     def fetch_db_details(self):
         if(self.config and tappy.in_tap()):
-            db_details = config["db"]
+            db_details = self.config["db"]
             db_host = db_details["address"]
             db_name = db_details["dbname"]
             db_user = db_details["user"]
