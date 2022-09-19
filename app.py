@@ -5,10 +5,12 @@ import targetoss_tappy as tappy
 from flask_apscheduler import APScheduler
 from controller import resize_server_capacity
 from datetime import datetime
+from apscheduler.triggers.cron import CronTrigger 
+from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask(__name__)
 
-scheduler = APScheduler()
+scheduler = BackgroundScheduler()
 
 @app.route('/health')
 def health():
@@ -23,16 +25,20 @@ def index():
 
 @app.route('/config')
 def config():
-    conf = Configuration()
+    if tappy.in_tap():
+        conf = tappy.Configuration().data
+    else:
+        conf = Configuration()
+
     app.logger.info(conf.data)
-    return jsonify(conf.data.get("cart", "config_value isn't in Consul!"))
+    return jsonify(conf.data.get("job", "config_value isn't in Consul!"))
 
 
-def scheduleScalingTask(config):
+def scheduleScalingTask(config=dict()):
     resize_server_capacity(config)
 
 #@scheduler.task('cron', id='do_job_1', hour=8, minute='30')
-def job():
+def schedule_job():
     if tappy.in_tap():
         config = tappy.Configuration().data
         job_details = config["job"]
@@ -40,18 +46,15 @@ def job():
         job_min = job_details["minute"]
     else:
         config = Configuration()
-        job_hr = 12
-        job_min = 8
+        job_hr = 13
+        job_min = 55
 
-    scheduler.add_job(id='Scheduled Task1', func=scheduleScalingTask(config),
-                      trigger="cron", hour=job_hr, minute=job_min)
+    scheduler.add_job(scheduleScalingTask, 'cron', day_of_week ='mon-sun', hour=job_hr, minute=job_min)
     scheduler.start()
     app.logger.info("Job scheduler details ")
 
 
-
 if __name__ == '__main__':
-   # app.config.from_object(Config())
-    scheduler.init_app(app)    
-    job()
+   # app.config.from_object(Config())  
+    schedule_job()
     app.run(debug=False, use_reloader=False, host='0.0.0.0', port=8080)
