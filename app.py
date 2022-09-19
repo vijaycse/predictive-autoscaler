@@ -30,11 +30,16 @@ def config():
     else:
         conf = Configuration()
 
-    app.logger.info(conf.data)
-    return jsonify(conf.data.get("job", "config_value isn't in Consul!"))
+    app.logger.info(conf)
+    return jsonify(conf.get("job", "config_value isn't in Consul!"))
 
-
-def scheduleScalingTask(config=dict()):
+# this func needs no-arg.. so had to fetch tap config again.
+def scheduleScalingTask():
+    if tappy.in_tap():
+        config = tappy.Configuration().data
+    else:
+        config = Configuration()
+ 
     resize_server_capacity(config)
 
 #@scheduler.task('cron', id='do_job_1', hour=8, minute='30')
