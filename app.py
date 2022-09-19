@@ -30,7 +30,7 @@ def config():
 def scheduleScalingTask(configuration_data):
     resize_server_capacity(configuration_data)
 
-@scheduler.task('cron', id='do_job_1', hour=11, minute='19')
+@scheduler.task('cron', id='do_job_1', hour=8, minute='30')
 def job(configuration_data=dict()):
     if tappy.in_tap():
         config = get_tap_config()
