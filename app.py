@@ -49,9 +49,9 @@ def job():
         job_min = 10
 
     scheduler.add_job(id='Scheduled Task1', func=scheduleScalingTask,
-                      trigger="cron", hour=job_hr, minute=job_min)
+                      trigger="cron", hour=int(job_hr), minute=int(job_min))
     scheduler.start()
-    print("Job scheduler initiated{} {} ".format(job_hr , job_min))
+    print("Job scheduler initiated {} {} ".format(job_hr , job_min))
 
 
 
