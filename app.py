@@ -61,6 +61,13 @@ def job():
 
 if __name__ == '__main__':
    # app.config.from_object(Config())
+    logging.basicConfig(
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        level=logging.DEBUG,
+        handlers=[
+            logging.StreamHandler(sys.stdout)
+        ]
+    )
     scheduler.init_app(app)    
     job()
     app.run(debug=False, use_reloader=False, host='0.0.0.0', port=8080)
