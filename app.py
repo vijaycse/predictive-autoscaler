@@ -33,7 +33,7 @@ def scheduleScalingTask():
         config = tappy.Configuration().data
     else:
         config = Configuration()
-
+    print("Jobs started")
     resize_server_capacity(config)
 
 #@scheduler.task('cron', id='do_job_1', hour=8, minute='30')
@@ -51,7 +51,7 @@ def job():
     scheduler.add_job(id='Scheduled Task1', func=scheduleScalingTask,
                       trigger="cron", hour=job_hr, minute=job_min)
     scheduler.start()
-    print("Job scheduler started")
+    print("Job scheduler initiated{} {} ".format(job_hr , job_min))
 
 
 
