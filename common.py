@@ -8,7 +8,7 @@ session = None
 
 
 def post_payload(uri, payload, header={}, auth=None):
-    logging.debug(" payload {} , uri {} ".format(payload, uri))
+    logging.trace(" payload {} , uri {} ".format(payload, uri))
     session = get_session()
     return session.post(uri,
                         verify=False,
@@ -36,7 +36,6 @@ def post_service_alert(msg, env,alert_api, alert_token,oauth_config=dict()):
                              payload,
                              {'Authorization': 'Bearer '+mytoken}
                              )
-    logging.info("alert payload response".format(payload))
     if alert_resp.status_code != 200:
         # This means something went wrong.
         logging.error(

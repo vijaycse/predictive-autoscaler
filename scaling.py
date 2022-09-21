@@ -39,13 +39,13 @@ class Scaling:
             'Scaling completed for {}'.format(app), self.tap_env,alert_api, alert_token , oauth_config)
 
     def resize_cluster(self, new_instance_count):
-        print("Updating cluster with new capacity per region".format(new_instance_count))
+        print("Updating cluster with new capacity per region {} ".format(new_instance_count))
         logging.info(
-            "Updating cluster with new capacity per region".format(new_instance_count))
+            "Updating cluster with new capacity per region {} ".format(new_instance_count))
         if(self.tap_env == 'dev'):   # if this is dev, just cut down to quarter resources
             new_instance_count = round(new_instance_count/4)
             Scaling.min_capacity = round(Scaling.min_capacity/4)
-            logging.info("dev instance count ".format(new_instance_count))
+            logging.info("dev instance count "+str(new_instance_count))
         if(new_instance_count is not None):
             new_instance_count = round(new_instance_count)
             if(new_instance_count > Scaling.min_capacity):
@@ -53,14 +53,14 @@ class Scaling:
                 server_group, current_instance_count = self.fetch_current_cluster(
                     session, self.tap_app, self.tap_cluster)
                 current_instance_count = current_instance_count/2  # total count need by region
-                logging.info("current instance count ".format(current_instance_count))
+                logging.info("current instance count {} ".format(current_instance_count))
                 if(new_instance_count != current_instance_count):
                     scaling_perct = self.percentage_change(
                         new_instance_count, current_instance_count)
-                    logging.info("diff_perct".format(scaling_perct))
+                    logging.info('diff_perct {} '.format(scaling_perct))
                     scaling_diff = new_instance_count - current_instance_count
                     print("scaling_diff", scaling_diff)
-                    logging.info("scaling_diff".format(scaling_diff))
+                    logging.info("scaling_diff {}".format(scaling_diff))
                     if(scaling_perct > 0.50):  # scale only if diff % more than 0.5%
                         # batch it and call method scale cluster iteratively
                         # to avoid scaling more than 4 at a time with buffer 2
@@ -93,9 +93,9 @@ class Scaling:
                         "No need to scale - proposed instance count is same as old")
 
             else:
-                logging.info('no change needed'.format(new_instance_count))
+                logging.info('no change needed {} '.format(new_instance_count))
         else:
-            logging.info('no change needed'.format(new_instance_count))
+            logging.info('no change needed {} '.format(new_instance_count))
 
     def fetch_session(self):
         requests.packages.urllib3.disable_warnings()
@@ -123,7 +123,7 @@ class Scaling:
         return tap_server_group, int(cluster_info.json()['instanceCounts']['total'])
 
     def resizing_cluster(self, new_instance_count, session, server_group, app, cluster):
-        logging.info('resizing Capacity'.format(str(new_instance_count)))
+        logging.info('resizing Capacity {}'.format(str(new_instance_count)))
         logging.info(" resizing Capacity cluster app {} , cluster {} , server_group {}".format(
             app, cluster, server_group))
         resize_central = session.put(url=self.tap_url+'/api/applications/'+app+'/clusters/'+cluster+'/dev/server_groups/'+server_group+'/resize',
