@@ -123,7 +123,7 @@ class Scaling:
         return tap_server_group, int(cluster_info.json()['instanceCounts']['total'])
 
     def resizing_cluster(self, new_instance_count, session, server_group, app, cluster):
-        logging.info('resizing Capacity' + str(new_instance_count))
+        logging.info('resizing Capacity'.format(str(new_instance_count)))
         logging.info(" resizing Capacity cluster app {} , cluster {} , server_group {}".format(
             app, cluster, server_group))
         resize_central = session.put(url=self.tap_url+'/api/applications/'+app+'/clusters/'+cluster+'/dev/server_groups/'+server_group+'/resize',
