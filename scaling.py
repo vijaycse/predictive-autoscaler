@@ -172,8 +172,8 @@ class Scaling:
             oauth_info['url'] = oauth_details["url"]
             oauth_info['user_name'] = oauth_details["user_name"]
             oauth_info['client_id'] = oauth_details["client_id"]
-            oauth_info['password'] = os.getenv('oauth_password')
-            oauth_info['client_secret'] = os.getenv('oauth_client_secret')
+            oauth_info['password'] = configuration_data('oauth_password')
+            oauth_info['client_secret'] = configuration_data('oauth_client_secret')
         else:
             oauth_info['url'] =  OAUTH_URL
             oauth_info['user_name']  = OAUTH_USER_NAME
@@ -187,7 +187,7 @@ class Scaling:
         if(configuration_data and tappy.in_tap()):
             alert_details = configuration_data["alert"]
             alert_api_key = alert_details["api_key"]
-            alert_token = os.getenv('alert_token')
+            alert_token = configuration_data('alert_token')
         else:
             alert_api_key = ALERT_API_KEY
             alert_token = ALERT_TOKEN
