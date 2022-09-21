@@ -18,7 +18,7 @@ def resize_server_capacity(configuration_data=dict()):
         forecast = db.get_forecast_last_run()
         new_instance_count = get_new_capacity(int(forecast[0]))
     
-    logging.info("new cluster size in each region",new_instance_count)
+    logging.info("new cluster size in each region".format(new_instance_count))
     scaling = Scaling(configuration_data)
     scaling.resize_cluster(new_instance_count)
 
@@ -26,7 +26,7 @@ def resize_server_capacity(configuration_data=dict()):
 ## OPH /TPS is total regardless of the regions. we need to divide the number by region
 ## e.g 300K OPH -> 300/2  150K perr region
 def get_new_capacity(forecast):
-    logging.info("forecast",forecast)
+    logging.info("forecast".format(forecast))
     forcast_per_region = round(forecast/2)
     new_capacity = None
     if forcast_per_region in range(0, 40001):
@@ -46,7 +46,7 @@ def get_new_capacity(forecast):
     else:
         new_capacity = None
 
-    logging.info("new_capacity per region",new_capacity)
+    logging.info("new_capacity per region".format(new_capacity))
     return int(new_capacity)
 
 
