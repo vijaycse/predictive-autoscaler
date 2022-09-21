@@ -6,6 +6,7 @@ from flask_apscheduler import APScheduler
 from controller import resize_server_capacity
 from datetime import datetime
 import logging
+import sys
 
 app = Flask(__name__)
 
