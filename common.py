@@ -8,7 +8,7 @@ session = None
 
 
 def post_payload(uri, payload, header={}, auth=None):
-    logging.trace(" payload {} , uri {} ".format(payload, uri))
+    logging.debug(" payload {} , uri {} ".format(payload, uri))
     session = get_session()
     return session.post(uri,
                         verify=False,
@@ -30,7 +30,7 @@ def get_session():
 
 def post_service_alert(msg, env,alert_api, alert_token,oauth_config=dict()):
     payload = {"status":msg,"env":env}
-    print("payload", payload)
+   # print("payload", payload)
     mytoken = getauth(oauth_config)
     alert_resp = post_payload("https://api.target.com/service_alerts/v1/?scope_token={}&key={}".format(alert_token,alert_api),
                              payload,
