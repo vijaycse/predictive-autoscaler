@@ -2,6 +2,7 @@ import os
 from db import DB
 from scaling import Scaling
 import logging
+from config import EXPECTED_OPH_FOR_100K,EXPECTED_OPH_FOR_40K,EXPECTED_OPH_FOR_200K,EXPECTED_OPH_FOR_300K,EXPECTED_OPH_FOR_400K,EXPECTED_OPH_FOR_500K,EXPECTED_OPH_FOR_600K
 
 
 def resize_server_capacity(configuration_data=dict()):
@@ -30,21 +31,21 @@ def get_new_capacity(forecast):
     forcast_per_region = round(forecast/2)
     new_capacity = None
     if forcast_per_region in range(0, 40001):
-        new_capacity = 50
+        new_capacity = EXPECTED_OPH_FOR_40K
     elif forcast_per_region in range(40001, 100001):
-        new_capacity = 80
+        new_capacity = EXPECTED_OPH_FOR_100K
     elif forcast_per_region in range(100001, 200001):
-        new_capacity = 120
+        new_capacity = EXPECTED_OPH_FOR_200K
     elif forcast_per_region in range(200001, 300001):
-        new_capacity = 150
+        new_capacity = EXPECTED_OPH_FOR_300K
     elif forcast_per_region in range(300001, 400001):
-        new_capacity = 180
+        new_capacity = EXPECTED_OPH_FOR_400K
     elif forcast_per_region in range(400001, 500001):
-        new_capacity = 210
+        new_capacity = EXPECTED_OPH_FOR_500K
     elif forcast_per_region in range(500001, 600001):
-        new_capacity = 250
+        new_capacity = EXPECTED_OPH_FOR_600K
     else:
-        new_capacity = None
+        new_capacity = 200
 
     logging.info("new_capacity per region {} ".format(new_capacity))
     return int(new_capacity)
