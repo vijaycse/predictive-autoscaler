@@ -2,7 +2,7 @@ import os
 from db import DB
 from scaling import Scaling
 import logging
-from config import EXPECTED_OPH_FOR_100K,EXPECTED_OPH_FOR_50K,EXPECTED_OPH_FOR_200K,EXPECTED_OPH_FOR_300K,EXPECTED_OPH_FOR_400K,EXPECTED_OPH_FOR_500K,EXPECTED_OPH_FOR_600K
+from config import EXPECTED_OPH_FOR_100K,EXPECTED_OPH_FOR_50K,EXPECTED_OPH_FOR_200K,EXPECTED_OPH_FOR_300K,EXPECTED_OPH_FOR_35K,EXPECTED_OPH_FOR_70K,EXPECTED_OPH_FOR_150K,EXPECTED_OPH_FOR_250K,EXPECTED_OPH_FOR_20K
 
 
 def resize_server_capacity(configuration_data=dict()):
@@ -25,25 +25,29 @@ def resize_server_capacity(configuration_data=dict()):
 
 ##TODO: need to get this mapping from config
 ## OPH /TPS is total regardless of the regions. we need to divide the number by region
-## e.g 300K OPH -> 300/2  150K perr region
+## e.g 300K OPH -> 300/2  150K per region
 def get_new_capacity(forecast):
     logging.info("forecast {} ".format(forecast))
     forcast_per_region = round(forecast/2)
     new_capacity = None
-    if forcast_per_region in range(0, 50001):
+    if forcast_per_region in range(0, 20001):
+        new_capacity = EXPECTED_OPH_FOR_20K
+    elif forcast_per_region in range(20001, 35001):
+        new_capacity = EXPECTED_OPH_FOR_35K
+    elif forcast_per_region in range(35001, 50001):
         new_capacity = EXPECTED_OPH_FOR_50K
-    elif forcast_per_region in range(50001, 100001):
+    elif forcast_per_region in range(50001, 70001):
+        new_capacity = EXPECTED_OPH_FOR_70K
+    elif forcast_per_region in range(70001, 100001):
         new_capacity = EXPECTED_OPH_FOR_100K
-    elif forcast_per_region in range(100001, 200001):
+    elif forcast_per_region in range(100001, 150001):
+        new_capacity = EXPECTED_OPH_FOR_150K
+    elif forcast_per_region in range(150001, 200001):
         new_capacity = EXPECTED_OPH_FOR_200K
-    elif forcast_per_region in range(200001, 300001):
+    elif forcast_per_region in range(200001, 250001):
+        new_capacity = EXPECTED_OPH_FOR_250K
+    elif forcast_per_region in range(250001, 300001):
         new_capacity = EXPECTED_OPH_FOR_300K
-    elif forcast_per_region in range(300001, 400001):
-        new_capacity = EXPECTED_OPH_FOR_400K
-    elif forcast_per_region in range(400001, 500001):
-        new_capacity = EXPECTED_OPH_FOR_500K
-    elif forcast_per_region in range(500001, 600001):
-        new_capacity = EXPECTED_OPH_FOR_600K
     else:
         new_capacity = 200
 

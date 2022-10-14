@@ -50,7 +50,7 @@ def job():
     else:
         config = Configuration()
         job_hr = 17
-        job_min = 12
+        job_min = 15
 
     scheduler.add_job(id='Scheduled Task1', func=scheduleScalingTask,
                       trigger="cron", hour=int(job_hr), minute=int(job_min))
