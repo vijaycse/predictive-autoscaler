@@ -1,5 +1,5 @@
 import requests
-from config import CLOUD_URL, CLOUD_APPLICATION, CLOUD_SERVER_GROUP, CLOUD_CLUSTER, CLOUD_USER, CLOUD_PASSWORD, CLOUD_ENVIRONMENT, CLOUD_APPLICATION_SECONDARY, CLOUD_CLUSTER_SECONDARY
+from config import CLOUD_URL, CLOUD_APPLICATION, CLOUD_CLUSTER, CLOUD_USER, CLOUD_PASSWORD, CLOUD_ENVIRONMENT, CLOUD_APPLICATION_SECONDARY, CLOUD_CLUSTER_SECONDARY
 from config import OAUTH_CLIENT_ID,OAUTH_CLIENT_SECRET,OAUTH_PASSWORD,OAUTH_URL,OAUTH_USER_NAME
 from config import ALERT_API_KEY , ALERT_TOKEN
 import time
@@ -61,7 +61,7 @@ class Scaling:
                     scaling_diff = new_instance_count - current_instance_count
                     print("scaling_diff", scaling_diff)
                     logging.info("scaling_diff {}".format(scaling_diff))
-                    if(scaling_perct > 0.50):  # scale only if diff % more than 0.5%
+                    if(scaling_perct >= 0.05):  # scale only if diff % more than 0.5%
                         # batch it and call method scale cluster iteratively
                         # to avoid scaling more than 4 at a time with buffer 2
                         self.resize_cluster_batch(
@@ -111,6 +111,7 @@ class Scaling:
     def fetch_server_group(self, session, app, cluster):
         server_group_info = session.get(url=self.tap_url+'/api/applications/'+app+'/clusters/'+cluster+'/'+self.tap_env+'/server_groups/',
                                         verify=False)
+        logging.info(server_group_info.json()['data'][0]['name'])
         return server_group_info.json()['data'][0]['name']
 
     def fetch_current_cluster(self, session, app, cluster):
