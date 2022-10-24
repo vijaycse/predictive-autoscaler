@@ -61,7 +61,7 @@ class Scaling:
                     scaling_diff = new_instance_count - current_instance_count
                     print("scaling_diff", scaling_diff)
                     logging.info("scaling_diff {}".format(scaling_diff))
-                    if(scaling_perct >= 0.05):  # scale only if diff % more than 0.5%
+                    if(scaling_perct >= 0.05):  # scale only if diff % more than 0.05%
                         # batch it and call method scale cluster iteratively
                         # to avoid scaling more than 4 at a time with buffer 2
                         self.resize_cluster_batch(
