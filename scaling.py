@@ -10,13 +10,14 @@ import math
 import logging
 from common import post_payload, post_service_alert
 import scaling
+from config import BATCH_SCALING_SIZE, SCALING_UP_THRESOLD,SCALING_DOWN_THRESOLD, SCALING_MIN_CAPACITY,SCALING_CARTS_TO_CHECKOUT_RATIO
 
 # scale up or down 4 instances at a time
 
 
 class Scaling:
 
-    min_capacity = 50
+    min_capacity = SCALING_MIN_CAPACITY
 
     def __init__(self, config):
         self.config = config
@@ -26,10 +27,10 @@ class Scaling:
     def resize_cluster_batch(self, new_instance_count, current_instance_count, session, server_group, app, cluster):
         logging.info('scaling need for {} , new instance - {} ,current instance count - {}'.format(
             app, new_instance_count, current_instance_count))
-        if(new_instance_count <= 4):
-            new_instance_count = 5  # setting atleast 5 min
-        for i in range(1, math.ceil(abs(new_instance_count/4))):
-            self.resizing_cluster(((4 * i) + current_instance_count),
+        if(new_instance_count <= BATCH_SCALING_SIZE):
+            new_instance_count = BATCH_SCALING_SIZE + 1  # setting atleast 5 min
+        for i in range(1, math.ceil(abs(new_instance_count/BATCH_SCALING_SIZE))):
+            self.resizing_cluster(((BATCH_SCALING_SIZE * i) + current_instance_count),
                                   session, server_group, app, cluster)
         logging.info('Update completed for {}'.format(app))
         print('Update completed for {}'.format(app))
@@ -61,7 +62,7 @@ class Scaling:
                     scaling_diff = new_instance_count - current_instance_count
                     print("scaling_diff", scaling_diff)
                     logging.info("scaling_diff {}".format(scaling_diff))
-                    if(scaling_perct >= 0.05):  # scale only if diff % more than 0.05%
+                    if(scaling_perct >= SCALING_UP_THRESOLD):  # scale only if diff % more than 0.05%
                         # batch it and call method scale cluster iteratively
                         # to avoid scaling more than 4 at a time with buffer 2
                         self.resize_cluster_batch(
@@ -71,9 +72,9 @@ class Scaling:
                             session, self.tap_app_secondary, self.tap_cluster_secondary)
 
                         self.resize_cluster_batch(  # secondary instance count reduce by 10
-                            math.ceil(new_instance_count / 10), (current_instance_count), session, server_group, self.tap_app_secondary, self.tap_cluster_secondary)  # buffer added
+                            math.ceil(new_instance_count / SCALING_CARTS_TO_CHECKOUT_RATIO), (current_instance_count), session, server_group, self.tap_app_secondary, self.tap_cluster_secondary)  # buffer added
                     # only do scale up if diff is less than 1%
-                    elif(scaling_perct <= -1.0 and scaling_diff < 0):  # negative numbers
+                    elif(scaling_perct <= SCALING_DOWN_THRESOLD and scaling_diff < 0):  # negative numbers
                         # no need to scale down if less than 1%
                         logging.info("only scaling down")
 
@@ -84,7 +85,7 @@ class Scaling:
                             session, self.tap_app_secondary, self.tap_cluster_secondary)
 
                         self.resize_cluster_batch(  # secondary instance count reduce by 10
-                            math.ceil(new_instance_count / 10), 0, session, server_group, self.tap_app_secondary, self.tap_cluster_secondary)
+                            math.ceil(new_instance_count / SCALING_CARTS_TO_CHECKOUT_RATIO), 0, session, server_group, self.tap_app_secondary, self.tap_cluster_secondary)
                     else:
                         logging.info(
                             "No need to scale as difference is not much")
