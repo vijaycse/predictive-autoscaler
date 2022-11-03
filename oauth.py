@@ -9,6 +9,7 @@ def getauth(config):
     # Set URL
     # Prod https://oauth.iam.target.com
     # Stage https://oauth.iam.perf.target.com
+    access_token = None
     oauth_props = config
     url = oauth_props['url']
 

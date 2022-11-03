@@ -110,10 +110,30 @@ class Scaling:
         return session
 
     def fetch_server_group(self, session, app, cluster):
-        server_group_info = session.get(url=self.tap_url+'/api/applications/'+app+'/clusters/'+cluster+'/'+self.tap_env+'/server_groups/',
+        active_server_group = None
+        server_group_list = session.get(url=self.tap_url+'/api/applications/'+app+'/clusters/'+cluster+'/'+self.tap_env+'/load_balancers/'+cluster+'.'+self.tap_env+'.shr.gcp.target.com',
                                         verify=False)
-        logging.info(server_group_info.json()['data'][0]['name'])
-        return server_group_info.json()['data'][0]['name']
+
+        if len(server_group_list.json()['weights']) == 0:
+            server_group = session.get(url=self.tap_url+'/api/applications/'+app+'/clusters/'+cluster+'/'+self.tap_env+'/server_groups/',
+                                      verify=False)
+            active_server_group = server_group.json()['data'][0]['name']
+            logging.info("highlander deployment detected in cluster "+cluster+", "+self.tap_env+" environment, active server group found: "+active_server_group)
+
+        elif len(server_group_list.json()['weights']) == 1 and server_group_list.json()['weights'][0]['weight'] == 100:
+            active_server_group = server_group_list.json()['weights'][0]['serverGroup']
+            logging.info("canary deployment detected in cluster "+cluster+", "+self.tap_env+" environment, active server group with weight 100 found : "+active_server_group)
+
+        elif len(server_group_list.json()['weights']) >= 1:
+            active_server_group = None
+            logging.info("multiple active server groups detected in "+cluster+", "+self.tap_env+" manual scale up is required.")
+            oauth_config = self.fetch_oauth_details(self.config)
+            alert_api , alert_token = self.fetch_alert_details(self.config)
+            post_service_alert('multiple active server groups detected manual scale up is required.'.format(app), self.tap_env,alert_api, alert_token , oauth_config)
+        else:
+            logging.info("failed to identify active server group")
+
+        return active_server_group
 
     def fetch_current_cluster(self, session, app, cluster):
         tap_server_group = self.fetch_server_group(session, app, cluster)

@@ -3,5 +3,7 @@ sqlalchemy
 psycopg2-binary
 urllib3~=1.26.4
 flask
-targetoss_tappy
 flask_apscheduler
+targetoss_tappy~=0.9.6
+--index-url https://binrepo.target.com/artifactory/api/pypi/pypi-remote/simple
+--extra-index-url https://binrepo.target.com/artifactory/api/pypi/tgt-python/simple
