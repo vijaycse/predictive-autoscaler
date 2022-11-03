@@ -113,6 +113,7 @@ class Scaling:
         active_server_group = None
         oauth_config = self.fetch_oauth_details(self.config)
         alert_api , alert_token = self.fetch_alert_details(self.config)
+
         server_group_list = session.get(url=self.tap_url+'/api/applications/'+app+'/clusters/'+cluster+'/'+self.tap_env+'/load_balancers/'+cluster+'.'+self.tap_env+'.shr.gcp.target.com',
                                         verify=False)
 
