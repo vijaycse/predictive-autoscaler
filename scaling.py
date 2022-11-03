@@ -111,6 +111,8 @@ class Scaling:
 
     def fetch_server_group(self, session, app, cluster):
         active_server_group = None
+        oauth_config = self.fetch_oauth_details(self.config)
+        alert_api , alert_token = self.fetch_alert_details(self.config)
         server_group_list = session.get(url=self.tap_url+'/api/applications/'+app+'/clusters/'+cluster+'/'+self.tap_env+'/load_balancers/'+cluster+'.'+self.tap_env+'.shr.gcp.target.com',
                                         verify=False)
 
@@ -127,11 +129,10 @@ class Scaling:
         elif len(server_group_list.json()['weights']) >= 1:
             active_server_group = None
             logging.info("multiple active server groups detected in "+cluster+", "+self.tap_env+" manual scale up is required.")
-            oauth_config = self.fetch_oauth_details(self.config)
-            alert_api , alert_token = self.fetch_alert_details(self.config)
-            post_service_alert('multiple active server groups detected manual scale up is required.'.format(app), self.tap_env,alert_api, alert_token , oauth_config)
+            post_service_alert('multiple active server groups detected, manual scale up is required.'.format(app), self.tap_env,alert_api, alert_token , oauth_config)
         else:
-            logging.info("failed to identify active server group")
+            logging.info("failed to identify active server group in cluster "+cluster+", "+self.tap_env)
+            post_service_alert('failed to identify active server group, manual scale up is required.'.format(app), self.tap_env,alert_api, alert_token , oauth_config)
 
         return active_server_group
 
