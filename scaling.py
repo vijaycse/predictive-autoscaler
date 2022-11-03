@@ -122,7 +122,7 @@ class Scaling:
 
         elif len(server_group_list.json()['weights']) == 1 and server_group_list.json()['weights'][0]['weight'] == 100:
             active_server_group = server_group_list.json()['weights'][0]['serverGroup']
-            logging.info("canary deployment detected in cluster "+cluster+", "+self.tap_env+" environment, active server group with weight 100 found : "+active_server_group)
+            logging.info("canary or red-black deployment detected in cluster "+cluster+", "+self.tap_env+" environment, active server group with weight 100 found : "+active_server_group)
 
         elif len(server_group_list.json()['weights']) >= 1:
             active_server_group = None
