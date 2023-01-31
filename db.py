@@ -24,9 +24,9 @@ class DB:
         current_dt = date.today()
         next_dt = date.today() + relativedelta(days=+1)
         logging.info("next day {} ".format(next_dt))
-        sql = "SELECT yhat,manual_override,override_order_per_hr FROM oph_forecast where ds>{} and ds<{} ORDER BY ds DESC LIMIT 1;".format(
+        sql = "SELECT oph_forecast,manual_override,override_order_per_hr FROM oph_forecast where ds>{} and ds<{} ORDER BY ds DESC LIMIT 1;".format(
             "'"+str(current_dt)+"'", "'"+str(next_dt)+"'")
-        # sql = "select yhat,manual_override,override_order_per_hr  where ds>{}from oph_forecast order by ds DESC  limit 1"
+        # sql = "select oph_forecast,manual_override,override_order_per_hr  where ds>{}from oph_forecast order by ds DESC  limit 1"
         result = engine.execute(sql)
         # logging.info(result.fetchone()) # always comment this out when running the script
         return result.fetchone()
@@ -41,8 +41,8 @@ class DB:
 
         engine = create_engine(postgres_str)
         logging.info("looking for default ")
-        sql = "SELECT yhat FROM oph_forecast where manual_override = false ORDER BY ds DESC LIMIT 1;"
-        # sql = "select yhat,manual_override,override_order_per_hr  where ds>{}from oph_forecast order by ds DESC  limit 1"
+        sql = "SELECT oph_forecast FROM oph_forecast where manual_override = false ORDER BY ds DESC LIMIT 1;"
+        # sql = "select oph_forecast,manual_override,override_order_per_hr  where ds>{}from oph_forecast order by ds DESC  limit 1"
         result = engine.execute(sql)
         # logging.info(result.fetchone()) # always comment this out when running the script
         return result.fetchone()
