@@ -3,7 +3,7 @@
 ## Problem Statement:
 
   Cloud infrastructure can be expensive for large and high traffic systems. 
-  TPS(transaction per second) sometimes is easy to determine (for instance Black friday , Cyber monday)
+  TPS(transaction per second) sometimes is easy to determine for normal days
 
   The Auto-scaling features provided by the cloud providers only works in a reactive fashion after 
   causing noticable distruptions for guests/customers. Often, Auto-Scaling is based on
